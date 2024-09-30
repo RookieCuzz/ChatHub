@@ -13,10 +13,13 @@ import com.zhanganzhi.chathub.core.adaptor.AbstractAdaptor;
 import com.zhanganzhi.chathub.core.events.MessageEvent;
 import com.zhanganzhi.chathub.core.events.ServerChangeEvent;
 import com.zhanganzhi.chathub.platforms.Platform;
+import com.zhanganzhi.chathub.platforms.web.models.ChatMessageDTO;
 import net.kyori.adventure.text.Component;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 public class VelocityAdaptor extends AbstractAdaptor<VelocityFormatter> {
     public VelocityAdaptor(ChatHub chatHub) {
@@ -60,6 +63,9 @@ public class VelocityAdaptor extends AbstractAdaptor<VelocityFormatter> {
     public void onUserChat(MessageEvent event) {
         for (String line : event.content().split("\n")) {
             Component component = Component.text(formatter.formatUserChat(event.getServerName(), event.user(), line));
+
+
+
             // check complete takeover mode for message from velocity
             if (event.platform() == Platform.VELOCITY && !config.isCompleteTakeoverMode()) {
                 sendMessage(component, event.server());
@@ -86,7 +92,15 @@ public class VelocityAdaptor extends AbstractAdaptor<VelocityFormatter> {
 
     @Subscribe
     public void onPlayerChatEvent(PlayerChatEvent event) {
+        long id = Thread.currentThread().getId();
+        System.out.println("线程id: "+id);
         Player player = event.getPlayer();
+        String uniqueId = player.getUniqueId().toString();
+        String username = player.getUsername();
+        String server = event.getPlayer().getCurrentServer().get().getServer().getServerInfo().getName();
+        Date currentDate = new Date();  // 获取当前日期和时间
+        ChatMessageDTO build = ChatMessageDTO.builder().playerUUID(uniqueId).playerName(username).serverName(server).messageTimeStamp(currentDate).message(event.getMessage()).build();
+        chatHub.getWebBridge().addMessage2Web(build);
         player.getCurrentServer().ifPresent(
                 serverConnection -> {
                     getEventHub().onUserChat(new MessageEvent(

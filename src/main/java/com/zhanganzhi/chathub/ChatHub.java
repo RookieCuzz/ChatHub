@@ -10,9 +10,10 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import com.zhanganzhi.chathub.core.EventHub;
 import com.zhanganzhi.chathub.core.config.Config;
 import com.zhanganzhi.chathub.platforms.velocity.VelocityCommand;
+import com.zhanganzhi.chathub.platforms.web.models.WebBridge;
 import lombok.Getter;
+import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
-
 import java.nio.file.Path;
 
 @Plugin(
@@ -26,6 +27,8 @@ import java.nio.file.Path;
         authors = {"Andy Zhang", "ZhuRuoLing", "401U"}
 )
 public class ChatHub {
+
+
     @Getter
     private final ProxyServer proxyServer;
     @Getter
@@ -34,6 +37,8 @@ public class ChatHub {
     @Getter
     private EventHub eventHub;
 
+    @Getter
+    private WebBridge webBridge;
     @Inject
     public ChatHub(ProxyServer proxyServer, Logger logger, @DataDirectory Path dataDirectory) {
         this.proxyServer = proxyServer;
@@ -46,7 +51,7 @@ public class ChatHub {
         // core
         Config.getInstance().loadConfig(dataDirectory);
         eventHub = new EventHub(this);
-
+        this.webBridge=new WebBridge();
         // command
         proxyServer.getCommandManager().register(
                 proxyServer.getCommandManager().metaBuilder("chathub").plugin(this).build(),
